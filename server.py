@@ -1,28 +1,57 @@
-import socket
+import socket 
+import sys 
+import csv
+
+HOST = 'localhost'
+PORT = 42069 
+CHUNK_SIZE = 1024
+
+def csv_reader(fname):
+    usernames = []
+    passwords = []
+    with open(fname) as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        for row in csv_reader:
+            usernames.append(row[0])
+            passwords.append(row[1])
+
+    return (usernames, passwords)
 
 
-HOST = '127.0.0.1'
-PORT = 42069
-# Creating a TCP/IP Socket
-'''
-    AF_NET is the internet address family for IPV4
-    SOCK_STREAM is the socket type for TCP
-'''
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    # Bind socket to a network interface and port number 
-    s.bind((HOST, PORT))
+usernames, passwords = csv_reader('usernames.csv')
 
-    # Put the socket into listening mode 
-    s.listen()
-    print('Socket is listening')
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    c, addr = s.accept()
-    with c:
-        print("Connected by", addr)
+sock.bind((HOST, PORT))
+print('Starting up on {} port {}'.format(HOST, PORT))
+
+
+# Listening mode
+sock.listen()
+
+
+
+while True:
+    print('Waiting for a connection...')
+    conn, addr = sock.accept() 
+    data = ''
+    try:
+        print('Connection from {}'.format(addr))
+        conn.sendall(b'Enter username to continue...')
+
         while True:
-            data = c.recv(1024)
-            if not data:
+            datachunk = conn.recv(CHUNK_SIZE)
+            if not datachunk:
                 break 
-            c.sendall(data)
+            data += datachunk.decode()
+            
+        print("username is: {}".format(data))
+        if data in usernames:
+            conn.sendall(b'Access Granted')
+        else:
+            conn.sendall(b'Access denied, Username not found')            
+
+    finally:
+        conn.close()
 
 
