@@ -1,19 +1,28 @@
 import socket
 
-s = socket.socket()
-port = 12345
 
-s.bind(('', port))
-print("Socket binded to %s" %(port))
+HOST = '127.0.0.1'
+PORT = 42069
+# Creating a TCP/IP Socket
+'''
+    AF_NET is the internet address family for IPV4
+    SOCK_STREAM is the socket type for TCP
+'''
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    # Bind socket to a network interface and port number 
+    s.bind((HOST, PORT))
 
-s.listen(5)
-print('Socket is listening')
+    # Put the socket into listening mode 
+    s.listen()
+    print('Socket is listening')
 
-
-while True:
     c, addr = s.accept()
-    print("Got connection from ", addr)
+    with c:
+        print("Connected by", addr)
+        while True:
+            data = c.recv(1024)
+            if not data:
+                break 
+            c.sendall(data)
 
-    c.send('Thank you for connecting'.encode())
 
-    c.close()

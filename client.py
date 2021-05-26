@@ -1,10 +1,12 @@
 import socket 
 
-s = socket.socket()
+HOST = '127.0.0.1'
+PORT = 42069
 
-port = 12345 
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((HOST, PORT))
+    s.sendall(b'Hello world!')
+    data = s.recv(1024)
 
-s.connect(('127.0.0.1', port))
+print('Received', repr(data))
 
-print(s.recv(1024).decode())
-s.close()
