@@ -5,6 +5,8 @@ import csv
 HOST = 'localhost'
 PORT = 42069 
 CHUNK_SIZE = 1024
+NOT_FOUND = '404'
+OK = '200'
 
 def csv_reader(fname):
     usernames = []
@@ -17,6 +19,7 @@ def csv_reader(fname):
 
     return (usernames, passwords)
 
+# def verify_user(conn):
 
 usernames, passwords = csv_reader('usernames.csv')
 
@@ -30,28 +33,32 @@ print('Starting up on {} port {}'.format(HOST, PORT))
 sock.listen()
 
 
-
+# The connection loop
 while True:
     print('Waiting for a connection...')
     conn, addr = sock.accept() 
-    data = ''
-    try:
-        print('Connection from {}'.format(addr))
-        conn.sendall(b'Enter username to continue...')
-
-        while True:
-            datachunk = conn.recv(CHUNK_SIZE)
-            if not datachunk:
-                break 
-            data += datachunk.decode()
+    
+    # Successful Connection loop
+    print('Connection from {}'.format(addr))
+    while True:
+        # Username verification
+        # conn.sendall(b'Enter username to continue...')
+        datachunk = conn.recv(CHUNK_SIZE)
+        uname = datachunk.decode()
             
-        print("username is: {}".format(data))
-        if data in usernames:
-            conn.sendall(b'Access Granted')
-        else:
-            conn.sendall(b'Access denied, Username not found')            
+        # print(uname)
+        if uname not in usernames:
+            print('Username NOT found')
+            conn.sendall(NOT_FOUND.encode())
 
-    finally:
-        conn.close()
+        else:
+            print('Username found')
+            conn.sendall(OK.encode())
+        
+            
+                            
+
+        # finally:
+        #     conn.close()
 
 
