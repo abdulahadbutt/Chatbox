@@ -6,15 +6,17 @@ from constants import *
 usernames, passwords = csv_reader('usernames.csv')
 
 
-def verify_user(conn):
+def verify_user_server(conn):
     while True:
+        # * receive username
         datachunk = conn.recv(CHUNK_SIZE)
-        print(datachunk)
+        
+        # * break the connection 
         if datachunk == EXIT:
             return False 
 
+        # * Username verification
         username = datachunk.decode()
-
         if username in usernames:
             conn.send(OK)
             print("username found")
@@ -22,10 +24,6 @@ def verify_user(conn):
         else:
             conn.send(NOT_FOUND)
             print("username not found")
-
-
-
-
 
 
 
@@ -48,26 +46,13 @@ while True:
     # * Successful Connection loop
     print('Connection from {}'.format(addr))
     while True:
-        # Username verification
-        # conn.sendall(b'Enter username to continue...'
+        # * Username verification
+        if not verify_user_server(conn):
+            break
 
-        conn.close()
-        # datachunk = conn.recv(CHUNK_SIZE)
-        # uname = datachunk.decode()
-            
-        # # print(uname)
-        # if uname not in usernames:
-        #     print('Username NOT found')
-        #     conn.sendall(NOT_FOUND.encode())
-
-        # else:
-        #     print('Username found')
-        #     conn.sendall(OK.encode())
+    conn.close()
         
             
                             
-
-        # finally:
-        #     conn.close()
 
 
