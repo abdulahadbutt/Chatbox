@@ -1,59 +1,68 @@
 import socket 
-import sys 
-import csv
+from funcs import csv_reader
+from constants import *
 
-HOST = 'localhost'
-PORT = 42069 
-CHUNK_SIZE = 1024
-NOT_FOUND = '404'
-OK = '200'
-
-def csv_reader(fname):
-    usernames = []
-    passwords = []
-    with open(fname) as f:
-        csv_reader = csv.reader(f, delimiter=',')
-        for row in csv_reader:
-            usernames.append(row[0])
-            passwords.append(row[1])
-
-    return (usernames, passwords)
-
-# def verify_user(conn):
-
+# * Reading in the usernames and passwords from the local directory
 usernames, passwords = csv_reader('usernames.csv')
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+def verify_user(conn):
+    while True:
+        datachunk = conn.recv(CHUNK_SIZE)
+        print(datachunk)
+        if datachunk == EXIT:
+            return False 
+
+        username = datachunk.decode()
+
+        if username in usernames:
+            conn.send(OK)
+            print("username found")
+            return 
+        else:
+            conn.send(NOT_FOUND)
+            print("username not found")
+
+
+
+
+
+
+
+# * Creating a socket and binding it
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind((HOST, PORT))
 print('Starting up on {} port {}'.format(HOST, PORT))
 
 
-# Listening mode
+# * Turning on listening mode
 sock.listen()
 
 
-# The connection loop
+# * The connection loop
 while True:
+    # * Accepting a new connection
     print('Waiting for a connection...')
     conn, addr = sock.accept() 
     
-    # Successful Connection loop
+    # * Successful Connection loop
     print('Connection from {}'.format(addr))
     while True:
         # Username verification
-        # conn.sendall(b'Enter username to continue...')
-        datachunk = conn.recv(CHUNK_SIZE)
-        uname = datachunk.decode()
-            
-        # print(uname)
-        if uname not in usernames:
-            print('Username NOT found')
-            conn.sendall(NOT_FOUND.encode())
+        # conn.sendall(b'Enter username to continue...'
 
-        else:
-            print('Username found')
-            conn.sendall(OK.encode())
+        conn.close()
+        # datachunk = conn.recv(CHUNK_SIZE)
+        # uname = datachunk.decode()
+            
+        # # print(uname)
+        # if uname not in usernames:
+        #     print('Username NOT found')
+        #     conn.sendall(NOT_FOUND.encode())
+
+        # else:
+        #     print('Username found')
+        #     conn.sendall(OK.encode())
         
             
                             
