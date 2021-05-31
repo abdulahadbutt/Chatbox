@@ -6,6 +6,7 @@ def verify_user_client(s):
             username = input('Enter your username (Enter -1 to exit):')
             if username == '-1':
                 s.send(EXIT)
+                return False 
             else:
                 s.sendall(username.encode())
                 
@@ -24,15 +25,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     # Connecting to the server
     s.connect((HOST, PORT))
     
-    while True:
-        # Username verification
-        # data = s.recv(1024)
-        # print(data.decode())
-        verify_user_client(s)
+    
+    # Username verification
+    # data = s.recv(1024)
+    # print(data.decode())
+    if not verify_user_client(s):
+        s.close()
+    else:
         print("I'm in B/")
 
-
-        s.close()
+        
+    s.close()
         
 
 
