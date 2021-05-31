@@ -13,16 +13,23 @@ def handle_client(conn, addr):
     
     while True:
         # * Username verification
-        if not verify_user_server(conn):
+        if not verify_user_server(conn, addr):
             break
         
+        # print('Say something')
+        while True:
+            data = conn.recv(1024)
+            if data == DISCONNECT:
+                break 
+            print(data.decode())
+            
+        break
         
-        msg = conn.recv()
 
     print(f'[DISCONNECTED] {addr} was disconnected')
     conn.close()
 
-def verify_user_server(conn):
+def verify_user_server(conn, addr):
     while True:
         # * receive username
         datachunk = conn.recv(CHUNK_SIZE)
@@ -35,11 +42,11 @@ def verify_user_server(conn):
         username = datachunk.decode()
         if username in usernames:
             conn.send(OK)
-            print("username found")
-            return 
+            print(f"[VERIFIED] {addr} was verified")
+            return True
         else:
             conn.send(NOT_FOUND)
-            print("username not found")
+            print(f"[NOT VERIFIED] {addr} was not verified")
 
 
 

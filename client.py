@@ -14,7 +14,7 @@ def verify_user_client(s):
                 datachunk = s.recv(CHUNK_SIZE)
                 if datachunk == OK:
                     print('Access granted')
-                    return  
+                    return True
                 else:
                     print("Username not found, please re-input")
 
@@ -32,9 +32,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     if not verify_user_client(s):
         s.close()
     else:
-        print("I'm in B/")
-
-        
+        print("Say something... (Enter -1 to disconnect)")
+    while True:
+            msg = input()
+            
+            if msg == '-1':
+                s.send(DISCONNECT)
+                break 
+            
+            s.send(msg.encode())
     s.close()
         
 
