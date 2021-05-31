@@ -1,30 +1,47 @@
 import socket 
+from constants import *
 
-HOST = '127.0.0.1'
-PORT = 42069
-CHUNK_SIZE = 1024
-NOT_FOUND = '404'
-OK = '200'
+def verify_user_client(s):
+    while True:
+            username = input('Enter your username (Enter -1 to exit):')
+            if username == '-1':
+                s.send(EXIT)
+                return False 
+            else:
+                s.sendall(username.encode())
+                
+                
+                datachunk = s.recv(CHUNK_SIZE)
+                if datachunk == OK:
+                    print('Access granted')
+                    return True
+                else:
+                    print("Username not found, please re-input")
+
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     
     # Connecting to the server
     s.connect((HOST, PORT))
     
+    
+    # Username verification
+    # data = s.recv(1024)
+    # print(data.decode())
+    if not verify_user_client(s):
+        s.close()
+    else:
+        print("Say something... (Enter -1 to disconnect)")
     while True:
-        # Username verification
-        # data = s.recv(1024)
-        # print(data.decode())
-        
-        username = input('Enter your username (Enter -1 to exit):')
-        if username == '-1':
-            break 
-        s.sendall(username.encode())
-        
-        
-        datachunk = s.recv(CHUNK_SIZE)
-        if datachunk.decode == OK:
-            print('Access granted')
+            msg = input()
+            
+            if msg == '-1':
+                s.send(DISCONNECT)
+                break 
+            
+            s.send(msg.encode())
+    s.close()
         
 
 

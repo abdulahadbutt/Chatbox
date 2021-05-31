@@ -1,64 +1,86 @@
 import socket 
-import sys 
-import csv
+import threading 
+from funcs import csv_reader
+from constants import *
 
-HOST = 'localhost'
-PORT = 42069 
-CHUNK_SIZE = 1024
-NOT_FOUND = '404'
-OK = '200'
-
-def csv_reader(fname):
-    usernames = []
-    passwords = []
-    with open(fname) as f:
-        csv_reader = csv.reader(f, delimiter=',')
-        for row in csv_reader:
-            usernames.append(row[0])
-            passwords.append(row[1])
-
-    return (usernames, passwords)
-
-# def verify_user(conn):
-
+# * Reading in the usernames and passwords from the local directory
 usernames, passwords = csv_reader('usernames.csv')
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-sock.bind((HOST, PORT))
-print('Starting up on {} port {}'.format(HOST, PORT))
-
-
-# Listening mode
-sock.listen()
-
-
-# The connection loop
-while True:
-    print('Waiting for a connection...')
-    conn, addr = sock.accept() 
+def handle_client(conn, addr):
+    # * Successful Connection loop
+    print(f"[NEW CONNECTION] {addr} connected.")
     
-    # Successful Connection loop
-    print('Connection from {}'.format(addr))
     while True:
-        # Username verification
-        # conn.sendall(b'Enter username to continue...')
-        datachunk = conn.recv(CHUNK_SIZE)
-        uname = datachunk.decode()
+        # * Username verification
+        if not verify_user_server(conn, addr):
+            break
+        
+        # print('Say something')
+        while True:
+            data = conn.recv(1024)
+            if data == DISCONNECT:
+                break 
+            print(data.decode())
             
-        # print(uname)
-        if uname not in usernames:
-            print('Username NOT found')
-            conn.sendall(NOT_FOUND.encode())
+        break
+        
 
+    print(f'[DISCONNECTED] {addr} was disconnected')
+    conn.close()
+
+def verify_user_server(conn, addr):
+    while True:
+        # * receive username
+        datachunk = conn.recv(CHUNK_SIZE)
+        
+        # * break the connection 
+        if datachunk == EXIT:
+            return False 
+
+        # * Username verification
+        username = datachunk.decode()
+        if username in usernames:
+            conn.send(OK)
+            print(f"[VERIFIED] {addr} was verified")
+            return True
         else:
-            print('Username found')
-            conn.sendall(OK.encode())
+            conn.send(NOT_FOUND)
+            print(f"[NOT VERIFIED] {addr} was not verified")
+
+
+
+# * Creating a socket and binding it
+# HOST = socket.gethostbyname(socket.gethostname())
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.bind((HOST, PORT))
+print('[STARTING] Starting up on {} port {}'.format(HOST, PORT))
+
+
+# * Turning on listening mode
+sock.listen()
+print(f'[LISTENING] Server is listening on {HOST}')
+
+# * The connection loop
+while True:
+    # * Accepting a new connection
+    # print('Waiting for a connection...')
+    conn, addr = sock.accept() 
+    thread = threading.Thread(target=handle_client, args=(conn, addr))
+    thread.start()
+    print(f'[ACTIVE CONNECTION] {threading.activeCount() - 1}')
+    
+    
+    # * Successful Connection loop
+    # print('Connection from {}'.format(addr))
+    # while True:
+        # * Username verification
+    #     if not verify_user_server(conn):
+    #         break
+
+    # conn.close()
         
             
                             
-
-        # finally:
-        #     conn.close()
 
 
