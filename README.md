@@ -9,3 +9,6 @@
 
 # things to do
 - make a connection between a client and another client
+- after making the connection, first try to send one message at a time
+- make them break the connection correctly
+- upscale to add simultaneous conversations
