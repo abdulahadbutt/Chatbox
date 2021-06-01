@@ -32,15 +32,23 @@ def handle_client(conn, addr):
 def verify_user_server(conn, addr):
     while True:
         # * receive username
-        datachunk = conn.recv(CHUNK_SIZE)
+        username = conn.recv(CHUNK_SIZE)
         
         # * break the connection 
-        if datachunk == EXIT:
+        if username == EXIT:
             return False 
 
-        # * Username verification
-        username = datachunk.decode()
-        if username in usernames:
+        # * Verification
+        username = username.decode()
+        # password = conn.recv(CHUNK_SIZE)
+        # password = password.decode()
+        # try:
+        #     cpass = passwords[usernames.index(username)] # The correct password
+        # except:
+        #     cpass = 'NOT FOUND'
+        print(f'username: {username}')
+        # print(f'password: {password}')
+        if username in usernames and False:
             conn.send(OK)
             print(f"[VERIFIED] {addr} was verified")
             return True
