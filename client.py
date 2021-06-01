@@ -57,10 +57,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 msg = input()
                 
                 if msg == '-1':
-                    s.send(DISCONNECT)
+                    send(s, DISCONNECT)
                     break 
                 
-                s.send(msg.encode())
+                send(s, msg)
         s.close()
         
 

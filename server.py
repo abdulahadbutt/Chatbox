@@ -34,10 +34,11 @@ def handle_client(conn, addr):
         
         # print('Say something')
         while True:
-            data = conn.recv(1024)
+            data = receive(conn)
+            # data = conn.recv(1024)
             if data == DISCONNECT:
                 break 
-            print(data.decode())
+            print(data)
             
         break
         
@@ -59,8 +60,8 @@ def verify_user_server(conn, addr):
         print(f'username: {username}')
         print(f'password: {password}')
         
-        if username in usernames and False:
-            conn.send(OK)
+        if username in usernames and passwords[usernames.index(username)] == password:
+            send(conn, OK)
             print(f"[VERIFIED] {addr} was verified")
             return True
         else:
