@@ -5,7 +5,7 @@ from constants import *
 
 # * Reading in the usernames and passwords from the local directory
 usernames, passwords = csv_reader('usernames.csv')
-
+online_users = []
 
 def send(conn, msg):
     message = msg.encode()
@@ -29,7 +29,8 @@ def handle_client(conn, addr):
     
     while True:
         # * Username verification
-        if not verify_user_server(conn, addr):
+        user = verify_user_server(conn, addr)
+        if not user:
             break
         
         # print('Say something')
@@ -38,7 +39,7 @@ def handle_client(conn, addr):
             # data = conn.recv(1024)
             if data == DISCONNECT:
                 break 
-            print(data)
+            print(f'[{user}]:{data}')
             
         break
         
@@ -63,7 +64,7 @@ def verify_user_server(conn, addr):
         if username in usernames and passwords[usernames.index(username)] == password:
             send(conn, OK)
             print(f"[VERIFIED] {addr} was verified")
-            return True
+            return username
         else:
             send(conn, NOT_FOUND)
             print(f"[NOT VERIFIED] {addr} was not verified")
