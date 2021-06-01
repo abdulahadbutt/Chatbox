@@ -7,6 +7,22 @@ from constants import *
 usernames, passwords = csv_reader('usernames.csv')
 
 
+def send(conn, msg):
+    message = msg.encode()
+    msg_len = len(message)
+    send_len = str(msg_len).encode()
+    send_len += b' ' * (HEADER - len(send_len))
+    conn.send(send_len)
+    conn.send(message)
+
+
+def receive(conn):
+    msg_len = conn.recv(HEADER).decode()
+    msg_len = int(msg_len)
+    msg = conn.recv(msg_len).decode()
+    return msg
+
+
 def handle_client(conn, addr):
     # * Successful Connection loop
     print(f"[NEW CONNECTION] {addr} connected.")
@@ -32,28 +48,23 @@ def handle_client(conn, addr):
 def verify_user_server(conn, addr):
     while True:
         # * receive username
-        username = conn.recv(CHUNK_SIZE)
+        username = receive(conn)
         
         # * break the connection 
         if username == EXIT:
             return False 
 
         # * Verification
-        username = username.decode()
-        # password = conn.recv(CHUNK_SIZE)
-        # password = password.decode()
-        # try:
-        #     cpass = passwords[usernames.index(username)] # The correct password
-        # except:
-        #     cpass = 'NOT FOUND'
+        password = receive(conn)
         print(f'username: {username}')
-        # print(f'password: {password}')
+        print(f'password: {password}')
+        
         if username in usernames and False:
             conn.send(OK)
             print(f"[VERIFIED] {addr} was verified")
             return True
         else:
-            conn.send(NOT_FOUND)
+            send(conn, NOT_FOUND)
             print(f"[NOT VERIFIED] {addr} was not verified")
 
 

@@ -1,8 +1,8 @@
 HOST =  'localhost'
-PORT = 5050 
+PORT = 6969 
 CHUNK_SIZE = 1024
-NOT_FOUND = '404'.encode()
-OK = '200'.encode()
-EXIT = '6000'.encode()
+NOT_FOUND = '404'
+OK = '200'
+EXIT = '6000'
 HEADER = 64
-DISCONNECT = '!DISCONNECT'.encode()
+DISCONNECT = '!DISCONNECT'
