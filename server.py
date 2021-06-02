@@ -81,23 +81,42 @@ def connect_clients(conn, username):
 def chat(c1, c2, u1, u2):
     print(f'[CHAT INITIALIZE] making a chat for {u1} and {u2}')
     
-    print(f'receiving ok from {c1}')
+    print(f'[ACK] receiving ok from {u1}')
     r1 = receive(c2)
-    print(f'receiving ok from {c2}')
+    print(f'[ACK] receiving ok from {u2}')
     r2 = receive(c1)
     if r1 == OK and r2 == OK:
         send(c1, OK)
         send(c2, OK)
 
+    m1closed, m2closed = False, False 
     while True:
         m1 = receive(c1)
-        if m1 == '-1':
-            return 
+        if m1 == DISCONNECT:
+            idx = [i for i, v in enumerate(online_users) if v[0] == u1][0]
+            del online_users[idx]
+            c1.close()
+            m1closed = True
+            print(f'[DISCONNECTED] {u1} was disconnected')
         print(f'[{u1}] {m1}')
+        
+        
+        
         m2 = receive(c2)
-        if m2 == '-1':
-            return 
+        if m2 == DISCONNECT:
+            idx = [i for i, v in enumerate(online_users) if v[0] == u2][0]
+            del online_users[idx]
+            c2.close() 
+            m2closed = True
+            print(f'[DISCONNECTED] {u2} was disconnected')
+
         print(f'[{u2}]{m2}')
+        
+        
+        
+        if m1closed and m2closed:
+            print('[CLOSE] closing connection between {u1} and {u2}')
+            exit()
 
     pass
 
@@ -140,12 +159,12 @@ def verify_user_server(conn, addr):
 
         # * Verification
         password = receive(conn)
-        print(f'username: {username}')
-        print(f'password: {password}')
+        # print(f'username: {username}')
+        # print(f'password: {password}')
         
         if username in usernames and passwords[usernames.index(username)] == password:
             send(conn, OK)
-            print(f"[VERIFIED] {addr} was verified")
+            print(f"[VERIFIED] {addr} was verified as {username}")
             online_users.append((username, addr, conn))
             return username
         else:

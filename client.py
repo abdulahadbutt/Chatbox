@@ -28,6 +28,11 @@ def chat(conn):
         print('You can now send messages to that guy')
         while True:
             msg = input('>> ')
+            if msg == '-1':
+                send(conn, DISCONNECT)
+                conn.close()
+                exit()
+
             send(conn, msg)
             # if user_of_interest in users:
             #     send(s, user_of_interest)
