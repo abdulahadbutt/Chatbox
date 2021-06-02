@@ -2,7 +2,7 @@ import socket
 import threading 
 from funcs import csv_reader
 from constants import *
-
+from time import sleep
 # * Reading in the usernames and passwords from the local directory
 usernames, passwords = csv_reader('usernames.csv')
 online_users = []
@@ -45,12 +45,22 @@ def connect_clients(conn, username):
             del online_users[idx]
             return
         
+        # ? will this work?
+        if user_of_interest == WAIT:
+            send(conn, 'Please wait...')
+            while True:
+                continue
+                
+
+            
 
         # ! STEP 7: IF UOI IS FOUND
         if user_of_interest != NOT_FOUND:
             print(f'[REQUEST] {username} has requested to chat with {user_of_interest}')
             idx = [i for i, v in enumerate(online_users) if v[0] == user_of_interest][0]
-            chat(conn, online_users[idx][2])
+            uoi_sock = online_users[idx][2]
+
+            chat(conn, online_users[idx][2], username, user_of_interest)
             return 
             
         # check = [item for item in online_users if user_of_interest in item]
@@ -68,12 +78,26 @@ def connect_clients(conn, username):
 
     # chat(conn, online_users[idx][2])
 
-def chat(c1, c2):
-    print(f'[CHAT INITIALIZE] making a chat for {c1} and {c2}')
-    ready = receive(c2)
-    if ready == OK:
+def chat(c1, c2, u1, u2):
+    print(f'[CHAT INITIALIZE] making a chat for {u1} and {u2}')
+    
+    print(f'receiving ok from {c1}')
+    r1 = receive(c2)
+    print(f'receiving ok from {c2}')
+    r2 = receive(c1)
+    if r1 == OK and r2 == OK:
         send(c1, OK)
         send(c2, OK)
+
+    while True:
+        m1 = receive(c1)
+        if m1 == '-1':
+            return 
+        print(f'[{u1}] {m1}')
+        m2 = receive(c2)
+        if m2 == '-1':
+            return 
+        print(f'[{u2}]{m2}')
 
     pass
 

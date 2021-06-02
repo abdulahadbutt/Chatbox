@@ -1,6 +1,8 @@
 from os import wait
 import socket 
 from constants import *
+import threading 
+
 
 def send(conn, msg):
     message = msg.encode()
@@ -52,6 +54,8 @@ def connect_to_user(conn):
         
         print("\nEnter the user name you want to communicate with")
         print("Enter -1 to exit and R to reload active users")
+        print("Enter !wait to wait to be connected")
+
         user_of_interest = input(">> ")
         # ! STEP 3: SENDING UOI TO SERVER
 
@@ -60,7 +64,10 @@ def connect_to_user(conn):
             send(conn, DISCONNECT)
             return  
         
-
+        if user_of_interest == '!wait':
+            send(conn, WAIT)
+            print(receive(conn))
+            chat(conn)
 
         # * If user is found
         # ! STEP 3 CONTINUED
@@ -105,6 +112,7 @@ def verify_user_client(s):
             return True
         else:
             print("Username not found, please re-input")
+
 
 
 
