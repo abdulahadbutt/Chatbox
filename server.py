@@ -47,8 +47,13 @@ def connect_clients(conn, username):
         
         # ? will this work?
         if user_of_interest == WAIT:
-            send(conn, 'Please wait...')
+            # send(conn, 'Please wait...')
+            wait_for_client(conn)
             while True:
+                ack = receive(conn)
+                if ack:
+                    print('aight')
+                    chat(conn)
                 continue
                 
 
@@ -60,9 +65,19 @@ def connect_clients(conn, username):
             idx = [i for i, v in enumerate(online_users) if v[0] == user_of_interest][0]
             uoi_sock = online_users[idx][2]
 
-            chat(conn, online_users[idx][2], username, user_of_interest)
+            send_ack_to_other_client(uoi_sock)
+            chat(conn)
             return 
-            
+
+
+def wait_for_client(conn):
+    pass
+
+def send_ack_to_other_client(conn):
+    send(conn, 'acknowledge')
+
+    pass 
+
         # check = [item for item in online_users if user_of_interest in item]
         # print(check)
         # if user_of_interest in online_users:
@@ -78,47 +93,58 @@ def connect_clients(conn, username):
 
     # chat(conn, online_users[idx][2])
 
-def chat(c1, c2, u1, u2):
-    print(f'[CHAT INITIALIZE] making a chat for {u1} and {u2}')
+def chat(conn):
+     while True:
+        msg = input('>> ')
+        
+        if msg == '-1':
+            send(conn, DISCONNECT)
+            break 
+        
+        send(conn, msg)
+
+
+# def chat(c1, c2, u1, u2):
+#     print(f'[CHAT INITIALIZE] making a chat for {u1} and {u2}')
     
-    print(f'[ACK] receiving ok from {u1}')
-    r1 = receive(c2)
-    print(f'[ACK] receiving ok from {u2}')
-    r2 = receive(c1)
-    if r1 == OK and r2 == OK:
-        send(c1, OK)
-        send(c2, OK)
+#     print(f'[ACK] receiving ok from {u1}')
+#     r1 = receive(c2)
+#     print(f'[ACK] receiving ok from {u2}')
+#     r2 = receive(c1)
+#     if r1 == OK and r2 == OK:
+#         send(c1, OK)
+#         send(c2, OK)
 
-    m1closed, m2closed = False, False 
-    while True:
-        m1 = receive(c1)
-        if m1 == DISCONNECT:
-            idx = [i for i, v in enumerate(online_users) if v[0] == u1][0]
-            del online_users[idx]
-            c1.close()
-            m1closed = True
-            print(f'[DISCONNECTED] {u1} was disconnected')
-        print(f'[{u1}] {m1}')
+#     m1closed, m2closed = False, False 
+#     while True:
+#         m1 = receive(c1)
+#         if m1 == DISCONNECT:
+#             idx = [i for i, v in enumerate(online_users) if v[0] == u1][0]
+#             del online_users[idx]
+#             c1.close()
+#             m1closed = True
+#             print(f'[DISCONNECTED] {u1} was disconnected')
+#         print(f'[{u1}] {m1}')
         
         
         
-        m2 = receive(c2)
-        if m2 == DISCONNECT:
-            idx = [i for i, v in enumerate(online_users) if v[0] == u2][0]
-            del online_users[idx]
-            c2.close() 
-            m2closed = True
-            print(f'[DISCONNECTED] {u2} was disconnected')
+#         m2 = receive(c2)
+#         if m2 == DISCONNECT:
+#             idx = [i for i, v in enumerate(online_users) if v[0] == u2][0]
+#             del online_users[idx]
+#             c2.close() 
+#             m2closed = True
+#             print(f'[DISCONNECTED] {u2} was disconnected')
 
-        print(f'[{u2}]{m2}')
+#         print(f'[{u2}]{m2}')
         
         
         
-        if m1closed and m2closed:
-            print('[CLOSE] closing connection between {u1} and {u2}')
-            exit()
+#         if m1closed and m2closed:
+#             print('[CLOSE] closing connection between {u1} and {u2}')
+#             exit()
 
-    pass
+#     pass
 
 def handle_client(conn, addr):
     # * Successful Connection loop

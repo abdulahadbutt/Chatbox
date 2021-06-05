@@ -42,6 +42,15 @@ def chat(conn):
             #     for user in users:
             #         print(user)
 
+def wait_for_ok(conn):
+    send(conn, WAIT)
+    ack = receive(conn)
+    print(f'got ack')
+    send(conn, 'ack')
+    chat(conn)
+
+    pass 
+
 def connect_to_user(conn):
     while True:
         # * Receiving the number of online users
@@ -70,9 +79,10 @@ def connect_to_user(conn):
             return  
         
         if user_of_interest == '!wait':
-            send(conn, WAIT)
-            print(receive(conn))
-            chat(conn)
+            wait_for_ok(conn)
+            # send(conn, WAIT)
+            # print(receive(conn))
+            # chat(conn)
 
         # * If user is found
         # ! STEP 3 CONTINUED

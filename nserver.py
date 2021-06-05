@@ -1,4 +1,3 @@
-from client import verify_user_client
 import socket 
 import threading 
 from constants import *
@@ -39,6 +38,7 @@ def receive(conn:socket.socket) -> str:
 def verify_user_server(conn:socket.socket, addr:tuple) -> str or False:
 # * Verifies if the user is registered
 # * Returns the username otherwise returns false
+# * Also appends the user and conn in the online_users list
     while True:
         # * receive username
         username = receive(conn)
@@ -70,24 +70,43 @@ def show_online_users(conn:socket.socket, username) -> None:
         send(conn, users[0])
 
 
+def chat(conn):
+# * Currently just receives the message and prints it
+    while True:
+        print('waiting for message')
+        msg = receive(conn)
+        if msg == DISCONNECT:
+            break 
+        else:
+            print(msg)
+
+
 def handle_client(conn:socket.socket, addr:tuple) -> None:
 # * Multithreaded function to handle a client connection
     # * Successful Connection loop
     print(f"[NEW CONNECTION] {addr} connected.")
 
     while True:
-        user = verify_user_client(conn, addr) 
+        # * Verify the user
+        user = verify_user_server(conn, addr) 
         if not user:
             break
-
-        show_online_users(conn, user)
-        resp = receive(conn)
-        if resp == DISCONNECT:
-            pass 
-        if resp == WAIT:
-            pass 
-        if resp == 'reload':
-            pass 
+        
+        # * Send the online users list to the user
+        show_online_users(conn)
+        chat(conn)
+        break 
+    
+    print(f'[DISCONNECTED] {addr} was disconnected')
+    conn.close()
+        # show_online_users(conn, user)
+        # resp = receive(conn)
+        # if resp == DISCONNECT:
+        #     pass 
+        # if resp == WAIT:
+        #     pass 
+        # if resp == 'reload':
+        #     pass 
 
 
 
