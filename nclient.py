@@ -58,6 +58,45 @@ def chat(conn):
         send(conn, msg)
 
 
+def get_online_users(conn):
+# * Gets all the users that are currently active
+
+    num_online = int(receive(conn))
+    print(f'Number of online users: {num_online}')
+    
+    # * Printing all the online users
+    users = []
+    for _ in range(num_online):
+        user = receive(conn)
+        users.append(user)
+        
+    return users
+
+def menu(conn):
+# * Shows the menu of the client side
+# * Returns None when you enter -1
+# * Prints online users if you enter R using print_online_users
+    
+    print('Enter R to show the online active users')
+    print('Enter !wait to wait to be connected')
+    print('Enter -1 to exit')
+
+    choice = input('>>')
+    if choice == '-1':
+        send(conn, DISCONNECT)
+        return
+
+    if choice == 'R':
+        send(conn, SHOW_CLIENTS)
+        users = get_online_users(conn)
+        print_online_users(users)
+
+
+def print_online_users(users: list) -> None:
+# * Helper function that prints all the usersnames taken
+    for user in users: 
+        print(user)
+
 if __name__ == '__main__':
     
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as conn:
@@ -69,8 +108,9 @@ if __name__ == '__main__':
             conn.close()
 
         # * Show the user list
+        menu(conn)
 
-        print('chatting')
-        chat(conn)
+        # print('chatting')
+        # chat(conn)
         print('Closing...')
         conn.close()

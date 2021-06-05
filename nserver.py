@@ -49,8 +49,8 @@ def verify_user_server(conn:socket.socket, addr:tuple) -> str or False:
 
         # * Verification
         password = receive(conn)
-        print(f'username: {username}')
-        print(f'password: {password}')
+        # print(f'username: {username}')
+        # print(f'password: {password}')
         
         if username in usernames and passwords[usernames.index(username)] == password:
             send(conn, OK)
@@ -62,9 +62,9 @@ def verify_user_server(conn:socket.socket, addr:tuple) -> str or False:
             print(f"[NOT VERIFIED] {addr} was not verified")
 
 
-def show_online_users(conn:socket.socket, username) -> None:
+def send_online_users(conn:socket.socket) -> None:
 # * Shows the online users to conn
-    print(f'[SENDING USER LIST] Sending usernames to {username}')
+# * Sends the usernames of all active users
     send(conn, str(len(online_users)))
     for users in online_users:
         send(conn, users[0])
@@ -80,6 +80,14 @@ def chat(conn):
         else:
             print(msg)
 
+def server_menu(conn, username):
+# * Mirrors the client menu
+# * Receives username of client as well 
+    client_ch = receive(conn)
+    if client_ch == SHOW_CLIENTS:
+        print(f'[SENDING USER LIST] Sending usernames to {username}')
+        send_online_users(conn) 
+
 
 def handle_client(conn:socket.socket, addr:tuple) -> None:
 # * Multithreaded function to handle a client connection
@@ -92,21 +100,17 @@ def handle_client(conn:socket.socket, addr:tuple) -> None:
         if not user:
             break
         
+        server_menu(conn, user)
         # * Send the online users list to the user
-        show_online_users(conn)
-        chat(conn)
+        # show_online_users(conn)
+        # chat(conn)
         break 
     
+    idx = [i for i, v in enumerate(online_users) if v[0] == user][0]
+    del online_users[idx]
     print(f'[DISCONNECTED] {addr} was disconnected')
     conn.close()
-        # show_online_users(conn, user)
-        # resp = receive(conn)
-        # if resp == DISCONNECT:
-        #     pass 
-        # if resp == WAIT:
-        #     pass 
-        # if resp == 'reload':
-        #     pass 
+
 
 
 
