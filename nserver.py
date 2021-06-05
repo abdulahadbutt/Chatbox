@@ -93,7 +93,7 @@ def handle_client(conn:socket.socket, addr:tuple) -> None:
 # * Multithreaded function to handle a client connection
     # * Successful Connection loop
     print(f"[NEW CONNECTION] {addr} connected.")
-
+    
     while True:
         # * Verify the user
         user = verify_user_server(conn, addr) 
@@ -132,10 +132,13 @@ if __name__ == "__main__":
 
 
     # * The connection loop
-    while True:
-        # * Accepting a new connection
-        conn, addr = sock.accept() 
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        print(f'[ACTIVE CONNECTION] {threading.activeCount() - 1}')
-        
+    try:
+        while True:
+            # * Accepting a new connection
+            conn, addr = sock.accept() 
+            thread = threading.Thread(target=handle_client, args=(conn, addr))
+            thread.start()
+            print(f'[ACTIVE CONNECTION] {threading.activeCount() - 1}')
+    except KeyboardInterrupt:
+        print('\n[SHUTTING DOWN] keyboard interrupt detected')
+        exit()
