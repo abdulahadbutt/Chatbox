@@ -82,19 +82,53 @@ def chat(conn):
         else:
             print(msg)
 
-def chat2(c1, c2):
+def chat2(c1, c2, u1, u2):
+
+    # * Send the waiting a conn a message that allows it to send messages
     send(c2, OK)
 
+    c2_closed, c1_closed = False, False 
+    
     while True:
+
         s1 = receive(c1)
-        print(s1)
+        if s1 == DISCONNECT:
+            c1_closed = True
+            print(f'[DIS REQ] {u1} requesting to be disconnected')
+        else:
+            print(s1)
+        
+        
         s2 = receive(c2)
-        print(s2)
-    pass
+        if s2 == DISCONNECT:
+            print(f'[DIS REQ] {u1} requesting to be disconnected')
+            c2_closed = True
+            
+        else:
+            print(s2)
+
+        if c1_closed and c2_closed:
+            print('[CHAT CLOSED] chat between {u1}  and {u2} closed')
+            remove_username(u2)
+            send(c1, OK)
+                       
+            return 
+
+
+def remove_username(user):
+    with open('connected_users.txt', 'rb') as f:
+        conn_users = pickle.load(f)
+
+    conn_users.remove(user)
+    with open('connected_users.txt', 'wb') as f:
+        pickle.dump(conn_users, f)
+    
+
 
 def server_menu(conn, username):
 # * Mirrors the client menu
 # * Receives username of client as well 
+# * Returns after a chat closes
     while True:
         client_ch = receive(conn)
         if client_ch == SHOW_CLIENTS:
@@ -104,13 +138,16 @@ def server_menu(conn, username):
         elif client_ch == WAIT:
             print(f'[WAITING] {username} is waiting to be connected to')
             wait_until_over(username)
+            # send(conn, OK) 
+            return
 
         else:
-            uoi = receive(conn)
+            uoi = client_ch
             print(f'[REQUEST] {username} has requested to chat with {uoi}')
             idx = [i for i, v in enumerate(online_users) if v[0] == uoi][0]
             uoi_sock = online_users[idx][2]
-            chat2(conn, uoi_sock)
+            chat2(conn, uoi_sock, u1=username, u2=uoi)
+            return 
 
         
 
@@ -130,13 +167,12 @@ def wait_until_over(user):
 
     # * Monitoring for change
     while True:
-        print('HERE')
         sleep(WAIT_TIME)
         with open('connected_users.txt', 'rb') as f:
             conn_users = pickle.load(f)
         
         if user not in conn_users:
-            print('[WE ARE OUT]')
+            # print('[WE ARE OUT]')
             return
 
 

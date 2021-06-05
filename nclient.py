@@ -2,6 +2,7 @@ import socket
 from constants import *
 
 def send(conn, msg):
+# * Sends msg to conn
     message = msg.encode()
     msg_len = len(message)
     send_len = str(msg_len).encode()
@@ -11,6 +12,7 @@ def send(conn, msg):
 
 
 def receive(conn):
+# * Receives msg from conn
     msg_len = conn.recv(HEADER).decode()
     msg_len = int(msg_len)
     msg = conn.recv(msg_len).decode()
@@ -26,14 +28,13 @@ def verify_user_client(s):
             send(s, EXIT)
             return False 
         password = input('Enter your password: ')
-        # print(f'({username}, {password})')
+
     
         
         send(s, username)
         send(s, password)
         datachunk = receive(s)
         
-        # datachunk = s.recv(CHUNK_SIZE)
         if datachunk == OK:
             print('Access granted')
             return True
@@ -98,11 +99,19 @@ def menu(conn):
             if ack == OK:
                 print('Can now talk')
                 chat(conn)
+                if ack == OK:
+                    return
     
     
         elif choice in users:
             send(conn, choice)
             chat(conn)
+            ack = receive(conn)
+            if ack == OK:
+                return 
+
+        else:
+            print(f'Invalid choice, please re-enter')
         
 
 
