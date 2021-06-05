@@ -82,21 +82,42 @@ def chat(conn):
         else:
             print(msg)
 
+def chat2(c1, c2):
+    send(c2, OK)
+
+    while True:
+        s1 = receive(c1)
+        print(s1)
+        s2 = receive(c2)
+        print(s2)
+    pass
+
 def server_menu(conn, username):
 # * Mirrors the client menu
 # * Receives username of client as well 
-    client_ch = receive(conn)
-    if client_ch == SHOW_CLIENTS:
-        print(f'[SENDING USER LIST] Sending usernames to {username}')
-        send_online_users(conn) 
+    while True:
+        client_ch = receive(conn)
+        if client_ch == SHOW_CLIENTS:
+            print(f'[SENDING USER LIST] Sending usernames to {username}')
+            send_online_users(conn) 
 
-    elif client_ch == WAIT:
-        print(f'[WAITING] {username} is waiting to be connected to')
-        wait_until_over(username)
+        elif client_ch == WAIT:
+            print(f'[WAITING] {username} is waiting to be connected to')
+            wait_until_over(username)
+
+        else:
+            uoi = receive(conn)
+            print(f'[REQUEST] {username} has requested to chat with {uoi}')
+            idx = [i for i, v in enumerate(online_users) if v[0] == uoi][0]
+            uoi_sock = online_users[idx][2]
+            chat2(conn, uoi_sock)
+
+        
 
 
 
 def wait_until_over(user):
+# * Keeps the thread in this loop until finished with our chat
     # * Initially adding our user in the list of conn users
 
     with open('connected_users.txt', 'rb') as f:

@@ -76,27 +76,34 @@ def menu(conn):
 # * Shows the menu of the client side
 # * Returns None when you enter -1
 # * Prints online users if you enter R using print_online_users
+    while True:
+        print('Enter R to show the online active users')
+        print('Enter !wait to wait to be connected')
+        print('Enter -1 to exit')
+
+        choice = input('>>')
+        if choice == '-1':
+            send(conn, DISCONNECT)
+            return
+
+        elif choice == 'R':
+            send(conn, SHOW_CLIENTS)
+            users = get_online_users(conn)
+            print_online_users(users)
+
+        elif choice == '!wait':
+            send(conn, WAIT)
+            print('Waiting on this side')
+            ack = wait_for_confirm(conn)
+            if ack == OK:
+                print('Can now talk')
+                chat(conn)
     
-    print('Enter R to show the online active users')
-    print('Enter !wait to wait to be connected')
-    print('Enter -1 to exit')
-
-    choice = input('>>')
-    if choice == '-1':
-        send(conn, DISCONNECT)
-        return
-
-    elif choice == 'R':
-        send(conn, SHOW_CLIENTS)
-        users = get_online_users(conn)
-        print_online_users(users)
-
-    elif choice == '!wait':
-        send(conn, WAIT)
-        print('Waiting on this side')
-        ack = wait_for_confirm(conn)
-        if ack == OK:
-            print('Can now talk')
+    
+        elif choice in users:
+            send(conn, choice)
+            chat(conn)
+        
 
 
 
