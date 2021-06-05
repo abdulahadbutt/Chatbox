@@ -2,6 +2,8 @@ import socket
 import threading 
 from constants import *
 import csv
+import pickle
+from time import sleep
 
 def csv_reader(fname: str) -> tuple:
 # * Reads the usernames and passwords in fname
@@ -88,6 +90,35 @@ def server_menu(conn, username):
         print(f'[SENDING USER LIST] Sending usernames to {username}')
         send_online_users(conn) 
 
+    elif client_ch == WAIT:
+        print(f'[WAITING] {username} is waiting to be connected to')
+        wait_until_over(username)
+
+
+
+def wait_until_over(user):
+    # * Initially adding our user in the list of conn users
+
+    with open('connected_users.txt', 'rb') as f:
+        conn_users = pickle.load(f)
+
+    conn_users.append(user)
+    with open('connected_users.txt', 'wb') as f:
+        pickle.dump(conn_users, f)
+        print('[DUMPED]')
+
+    # * Monitoring for change
+    while True:
+        print('HERE')
+        sleep(WAIT_TIME)
+        with open('connected_users.txt', 'rb') as f:
+            conn_users = pickle.load(f)
+        
+        if user not in conn_users:
+            print('[WE ARE OUT]')
+            return
+
+
 
 def handle_client(conn:socket.socket, addr:tuple) -> None:
 # * Multithreaded function to handle a client connection
@@ -119,6 +150,9 @@ if __name__ == "__main__":
     usernames, passwords = csv_reader('usernames.csv')
     online_users = []
     
+    # ! Adding pickle thingy
+    with open('connected_users.txt', 'wb') as f:
+        pickle.dump([], f)
 
     # * Creating a socket and binding it
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

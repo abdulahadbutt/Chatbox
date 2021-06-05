@@ -86,10 +86,23 @@ def menu(conn):
         send(conn, DISCONNECT)
         return
 
-    if choice == 'R':
+    elif choice == 'R':
         send(conn, SHOW_CLIENTS)
         users = get_online_users(conn)
         print_online_users(users)
+
+    elif choice == '!wait':
+        send(conn, WAIT)
+        print('Waiting on this side')
+        ack = wait_for_confirm(conn)
+        if ack == OK:
+            print('Can now talk')
+
+
+
+def wait_for_confirm(conn):
+    msg = receive(conn)
+    return msg 
 
 
 def print_online_users(users: list) -> None:
@@ -101,16 +114,20 @@ if __name__ == '__main__':
     
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as conn:
         conn.connect((HOST, PORT))
+        try:
+            # * Verify the user
+            if not verify_user_client(conn):
+                print('Closing....')
+                conn.close()
 
-        # * Verify the user
-        if not verify_user_client(conn):
-            print('Closing....')
+            # * Show the user list
+            menu(conn)
+
+            # print('chatting')
+            # chat(conn)
+            print('Closing...')
             conn.close()
-
-        # * Show the user list
-        menu(conn)
-
-        # print('chatting')
-        # chat(conn)
-        print('Closing...')
-        conn.close()
+        except KeyboardInterrupt:
+            print('\nOkay bye')
+            conn.close()
+            exit()
