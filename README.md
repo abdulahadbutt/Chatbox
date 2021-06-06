@@ -11,4 +11,9 @@
 10. Send messages one at a time
 11. Enter '-1' to disconnect
 
+# Information about the files
+- client.py is the client file
+- server.py is the server file
+- usernames.csv contains all the usernames and passwords
+- connected_users.txt is a .txt file used to contain pickle dumps of lists (More info in code)
 
