@@ -1,5 +1,6 @@
 import socket 
 from constants import *
+import threading 
 
 def send(conn, msg):
 # * Sends msg to conn
@@ -46,17 +47,37 @@ def close_conn(conn):
     print('Closing....')
     conn.close()
 
+def listener(conn):
+    while True:
+        data = receive(conn)
+        
+        if data == DISCONNECT:
+            return 
+
+        print(data)
+
 
 def chat(conn):
 # * Currently just sends messages to server where they are printed
+    # threading.Thread(target=listener, args=(conn))
+    my_turn = receive(conn)
+    my_turn = True if my_turn == 'True' else False 
     while True:
-        msg = input('>> ')
+        # print(f'My turn:{my_turn}')
+        if my_turn:
+            msg = input('>> ')
         
-        if msg == '-1':
-            send(conn, DISCONNECT)
-            break 
-        
-        send(conn, msg)
+            if msg == '-1':
+                send(conn, DISCONNECT)
+                break 
+            
+            send(conn, msg)
+            my_turn = False 
+        else:
+            # print('waiting for input')
+            msg = receive(conn)
+            print(msg) 
+            my_turn = True
 
 
 def get_online_users(conn):

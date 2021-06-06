@@ -82,35 +82,66 @@ def chat(conn):
         else:
             print(msg)
 
+
+def comm(sender, receiver):
+    while True:
+        data = receive(sender)
+
+        if data == DISCONNECT:
+            return False 
+
+        send(receiver, data)
+
+    
+
+
 def chat2(c1, c2, u1, u2):
 
     # * Send the waiting a conn a message that allows it to send messages
     send(c2, OK)
 
+    send(c1, 'True')
+    send(c2, 'False')
+
     c2_closed, c1_closed = False, False 
     
+
+    # ! Need to add the following into threads
+    # comm(c1,c2)
+    # comm(c2,c1)
+
     while True:
 
-        s1 = receive(c1)
-        if s1 == DISCONNECT:
-            c1_closed = True
-            print(f'[DIS REQ] {u1} requesting to be disconnected')
-        else:
-            print(s1)
+        if not c1_closed:
+            s1 = receive(c1)
+            if s1 == DISCONNECT:
+                c1_closed = True
+                print(f'[DIS REQ] {u1} requesting to be disconnected')
+                if not c2_closed:
+                    send(c2, f'[{u1}] has left the chat')
+                send(c1, OK)
+            else:
+                if not c2_closed:
+                    send(c2, f'[{u1}] {s1}')
         
         
-        s2 = receive(c2)
-        if s2 == DISCONNECT:
-            print(f'[DIS REQ] {u1} requesting to be disconnected')
-            c2_closed = True
-            
-        else:
-            print(s2)
+        if not c2_closed:
+            s2 = receive(c2)
+            if s2 == DISCONNECT:
+                print(f'[DIS REQ] {u2} requesting to be disconnected')
+                c2_closed = True
+                if not c1_closed:
+                    send(c1, f'[{u2}] has left the chat')
+                
+            else:
+                if not c1_closed:
+                    send(c1, f'[{u2}] {s2}')
+
 
         if c1_closed and c2_closed:
-            print('[CHAT CLOSED] chat between {u1}  and {u2} closed')
+            print(f'[CHAT CLOSED] chat between {u1}  and {u2} closed')
             remove_username(u2)
-            send(c1, OK)
+            # send(c1, OK)
                        
             return 
 

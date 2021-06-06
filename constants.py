@@ -1,5 +1,5 @@
 HOST =  'localhost'
-PORT = 42069 
+PORT = 6969 
 CHUNK_SIZE = 1024
 NOT_FOUND = '404'
 OK = '200'
