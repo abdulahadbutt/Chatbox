@@ -1,9 +1,9 @@
 import socket 
 from constants import *
-import threading 
+
 
 def send(conn, msg):
-# * Sends msg to conn
+# * Sends msg to conn using HEADER approach
     message = msg.encode()
     msg_len = len(message)
     send_len = str(msg_len).encode()
@@ -13,7 +13,7 @@ def send(conn, msg):
 
 
 def receive(conn):
-# * Receives msg from conn
+# * Receives msg from conn using HEADER approach
     msg_len = conn.recv(HEADER).decode()
     msg_len = int(msg_len)
     msg = conn.recv(msg_len).decode()
@@ -30,51 +30,40 @@ def verify_user_client(s):
             return False 
         password = input('Enter your password: ')
 
-    
-        
+        # * Sending data
         send(s, username)
         send(s, password)
+
+        # * Receiving ACK
         datachunk = receive(s)
-        
         if datachunk == OK:
             print('Access granted')
             return True
         else:
-            print("Username not found, please re-input")
-
-
-def close_conn(conn):
-    print('Closing....')
-    conn.close()
-
-def listener(conn):
-    while True:
-        data = receive(conn)
-        
-        if data == DISCONNECT:
-            return 
-
-        print(data)
+            print("Username or password is incorret, please re-input")
 
 
 def chat(conn):
 # * Currently just sends messages to server where they are printed
-    # threading.Thread(target=listener, args=(conn))
+# * Sees if it's this user's turn to talk, sends message if it is, else receives message
+# * Returns if message is -1
+
+    # * Check if my turn to speak 
     my_turn = receive(conn)
     my_turn = True if my_turn == 'True' else False 
+
+
     while True:
-        # print(f'My turn:{my_turn}')
         if my_turn:
             msg = input('>> ')
-        
             if msg == '-1':
                 send(conn, DISCONNECT)
-                break 
-            
+                break             
             send(conn, msg)
             my_turn = False 
+        
+        
         else:
-            # print('waiting for input')
             msg = receive(conn)
             print(msg) 
             my_turn = True
@@ -93,6 +82,7 @@ def get_online_users(conn):
         users.append(user)
         
     return users
+
 
 def menu(conn):
 # * Shows the menu of the client side
@@ -138,6 +128,8 @@ def menu(conn):
 
 
 def wait_for_confirm(conn):
+# * Helper function
+# * Used for client that is waiting to be connected
     msg = receive(conn)
     return msg 
 
@@ -160,10 +152,10 @@ if __name__ == '__main__':
             # * Show the user list
             menu(conn)
 
-            # print('chatting')
-            # chat(conn)
+
             print('Closing...')
             conn.close()
+        
         except KeyboardInterrupt:
             print('\nOkay bye')
             conn.close()
