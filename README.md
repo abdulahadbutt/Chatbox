@@ -1,3 +1,5 @@
+# A repo for my project on Communication Course in SEECS, NUST
+
 # How to run
 1. open a command prompt
 2. write "python server.py" and hit enter
